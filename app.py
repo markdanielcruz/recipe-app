@@ -245,9 +245,19 @@ if st.button("Generate Excel"):
             pass
 
     # SAVE
-    with NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
-        wb.save(tmp.name)
-        with open(tmp.name, "rb") as f:
-            file_name = f"{recipe_name.strip().replace(' ', '_')}.xlsx" if recipe_name else "recipe_output.xlsx"
+    from io import BytesIO
 
-            st.download_button("Download Excel", f, file_name=file_name)
+output = BytesIO()
+wb.save(output)
+output.seek(0)
+
+file_name = f"{recipe_name.strip().replace(' ', '_')}.xlsx" if recipe_name else "recipe.xlsx"
+
+st.download_button(
+    label="Download Excel",
+    data=output,
+    file_name=file_name,
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
+
+
