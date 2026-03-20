@@ -1,3 +1,11 @@
+import mimetypes
+mimetypes.init()
+
+mimetypes.add_type(
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    '.xlsx'
+)
+
 import streamlit as st
 import pandas as pd
 from openpyxl import load_workbook
