@@ -1,6 +1,5 @@
 import mimetypes
 mimetypes.init()
-
 mimetypes.add_type(
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     '.xlsx'
@@ -76,7 +75,7 @@ if st.button("Add Ingredient"):
 # ================= INGREDIENT LIST =================
 st.markdown("### 📋 Ingredients List")
 
-delete_index = None  # track which to delete
+delete_index = None
 
 for i, item in enumerate(st.session_state["items"]):
     with st.expander(item["ingredient"]):
@@ -84,26 +83,16 @@ for i, item in enumerate(st.session_state["items"]):
         col1, col2 = st.columns(2)
 
         with col1:
-            item["qty"] = st.number_input(
-                f"Qty {i}", value=item["qty"], key=f"qty_{i}"
-            )
-            item["packaging"] = st.number_input(
-                f"Packaging {i}", value=item["packaging"], key=f"pack_{i}"
-            )
+            item["qty"] = st.number_input(f"Qty {i}", value=item["qty"], key=f"qty_{i}")
+            item["packaging"] = st.number_input(f"Packaging {i}", value=item["packaging"], key=f"pack_{i}")
 
         with col2:
-            item["uom"] = st.text_input(
-                f"UOM {i}", value=item["uom"], key=f"uom_{i}"
-            )
-            item["unit_cost"] = st.number_input(
-                f"Unit Cost {i}", value=item["unit_cost"], key=f"cost_{i}"
-            )
+            item["uom"] = st.text_input(f"UOM {i}", value=item["uom"], key=f"uom_{i}")
+            item["unit_cost"] = st.number_input(f"Unit Cost {i}", value=item["unit_cost"], key=f"cost_{i}")
 
-        # 👇 mark for deletion (DO NOT delete yet)
         if st.button(f"❌ Delete {item['ingredient']}", key=f"delete_{i}"):
             delete_index = i
 
-# 👇 delete OUTSIDE the loop (important)
 if delete_index is not None:
     st.session_state["items"].pop(delete_index)
     st.rerun()
@@ -190,14 +179,13 @@ if st.button("Generate Excel"):
         ws[f"D{r}"] = item["uom"]
         ws[f"F{r}"] = item["unit_cost"]
 
-    # CLEAR UNUSED ROWS (SAFE)
+    # CLEAR UNUSED ROWS
     for r in range(start_row + len(st.session_state["items"]), 41):
         for col in ["A","B","C","D","E","F","G","H"]:
             ws[f"{col}{r}"] = None
 
-    # ================= PROCEDURE (LINE BY LINE) =================
+    # PROCEDURE
     lines = procedure.split("\n")
-
     row_cursor = 62
     step = 1
 
@@ -207,10 +195,9 @@ if st.button("Generate Excel"):
             row_cursor += 1
             step += 1
 
-    # ================= CLEAN IMAGE GRID (FORCED SIZE) =================
-
+    # IMAGES
     START_ROW = 66
-    COLS = ["A", "D", "G"]   # 3 per row (fits nicely inside page)
+    COLS = ["A", "D", "G"]
 
     IMG_WIDTH = 240
     IMG_HEIGHT = 160
@@ -226,38 +213,31 @@ if st.button("Generate Excel"):
                 tmp.write(img_file.read())
 
                 img = XLImage(tmp.name)
-
-                # 🔥 FORCE SAME SIZE FOR ALL
                 img.width = IMG_WIDTH
                 img.height = IMG_HEIGHT
 
-                # place image
                 col_letter = COLS[col_index]
                 ws.add_image(img, f"{col_letter}{row}")
 
                 col_index += 1
 
-                # move to next row after 3 images
                 if col_index == 3:
                     col_index = 0
-                    row += 16   # spacing between rows
+                    row += 16
 
         except:
             pass
 
-    # SAVE
-    
-output = BytesIO()
-wb.save(output)
-output.seek(0)
+    # SAVE (FINAL FIX)
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
 
-file_name = f"{recipe_name.strip().replace(' ', '_')}.xlsx" if recipe_name else "recipe.xlsx"
+    file_name = f"{recipe_name.strip().replace(' ', '_')}.xlsx" if recipe_name else "recipe.xlsx"
 
-st.download_button(
-    label="Download Excel",
-    data=output,
-    file_name=file_name,
-    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-)
-
-
+    st.download_button(
+        label="Download Excel",
+        data=output,
+        file_name=file_name,
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
