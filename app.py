@@ -12,6 +12,7 @@ from openpyxl import load_workbook
 from openpyxl.drawing.image import Image as XLImage
 from tempfile import NamedTemporaryFile
 from PIL import Image as PILImage
+from io import BytesIO
 
 # ================= UI =================
 st.markdown("## 🍰 Servando Recipe Card Generator")
@@ -245,8 +246,7 @@ if st.button("Generate Excel"):
             pass
 
     # SAVE
-    from io import BytesIO
-
+    
 output = BytesIO()
 wb.save(output)
 output.seek(0)
