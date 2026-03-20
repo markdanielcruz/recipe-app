@@ -12,6 +12,8 @@ from openpyxl.drawing.image import Image as XLImage
 from tempfile import NamedTemporaryFile
 from PIL import Image as PILImage
 from io import BytesIO
+import tempfile
+import os
 
 # ================= UI =================
 st.markdown("## 🍰 Servando Recipe Card Generator")
@@ -60,9 +62,9 @@ with col2:
 if st.button("Add Ingredient"):
     row = cost_df[cost_df.iloc[:, 0] == ingredient].iloc[0]
 
-    unit_cost = row[1]
-    uom = row[2]
-    packaging = 1000 if uom in ["g", "ml"] else 1
+    unit_cost = float(row[1])
+    uom = str(row[2])
+    packaging = 1000 if uom.lower() in ["g", "ml"] else 1
 
     st.session_state["items"].append({
         "ingredient": ingredient,
@@ -83,12 +85,12 @@ for i, item in enumerate(st.session_state["items"]):
         col1, col2 = st.columns(2)
 
         with col1:
-            item["qty"] = st.number_input(f"Qty {i}", value=item["qty"], key=f"qty_{i}")
-            item["packaging"] = st.number_input(f"Packaging {i}", value=item["packaging"], key=f"pack_{i}")
+            item["qty"] = st.number_input(f"Qty {i}", value=float(item["qty"]), key=f"qty_{i}")
+            item["packaging"] = st.number_input(f"Packaging {i}", value=float(item["packaging"]), key=f"pack_{i}")
 
         with col2:
             item["uom"] = st.text_input(f"UOM {i}", value=item["uom"], key=f"uom_{i}")
-            item["unit_cost"] = st.number_input(f"Unit Cost {i}", value=item["unit_cost"], key=f"cost_{i}")
+            item["unit_cost"] = st.number_input(f"Unit Cost {i}", value=float(item["unit_cost"]), key=f"cost_{i}")
 
         if st.button(f"❌ Delete {item['ingredient']}", key=f"delete_{i}"):
             delete_index = i
@@ -150,69 +152,68 @@ images = st.file_uploader(
 # ================= GENERATE =================
 if st.button("Generate Excel"):
 
-    wb = load_workbook("template.xlsx")
-    ws = wb.active
+    try:
+        wb = load_workbook("template.xlsx")
+        ws = wb.active
 
-    # HEADER
-    ws["A3"] = recipe_name
-    ws["A6"] = category
-    ws["A55"] = recipe_name
-    ws["A58"] = category
+        ws["A3"] = recipe_name
+        ws["A6"] = category
+        ws["A55"] = recipe_name
+        ws["A58"] = category
 
-    # YIELDS
-    ws["A8"] = total_yield
-    ws["C8"] = serving_size
-    ws["F8"] = servings
+        ws["A8"] = total_yield
+        ws["C8"] = serving_size
+        ws["F8"] = servings
 
-    # SIGNATURES
-    ws["H47"] = prepared_by
-    ws["H51"] = checked_by
+        ws["H47"] = prepared_by
+        ws["H51"] = checked_by
 
-    start_row = 13
+        start_row = 13
 
-    # INGREDIENTS
-    for i, item in enumerate(st.session_state["items"]):
-        r = start_row + i
-        ws[f"A{r}"] = item["ingredient"]
-        ws[f"B{r}"] = item["qty"]
-        ws[f"C{r}"] = item["packaging"]
-        ws[f"D{r}"] = item["uom"]
-        ws[f"F{r}"] = item["unit_cost"]
+        for i, item in enumerate(st.session_state["items"]):
+            r = start_row + i
+            ws[f"A{r}"] = item["ingredient"]
+            ws[f"B{r}"] = item["qty"]
+            ws[f"C{r}"] = item["packaging"]
+            ws[f"D{r}"] = item["uom"]
+            ws[f"F{r}"] = item["unit_cost"]
 
-    # CLEAR UNUSED ROWS
-    for r in range(start_row + len(st.session_state["items"]), 41):
-        for col in ["A","B","C","D","E","F","G","H"]:
-            ws[f"{col}{r}"] = None
+        for r in range(start_row + len(st.session_state["items"]), 41):
+            for col in ["A","B","C","D","E","F","G","H"]:
+                ws[f"{col}{r}"] = None
 
-    # PROCEDURE
-    lines = procedure.split("\n")
-    row_cursor = 62
-    step = 1
+        row_cursor = 62
+        for i, line in enumerate(procedure.split("\n"), start=1):
+            if line.strip():
+                ws[f"A{row_cursor}"] = f"Step {i}: {line}"
+                row_cursor += 1
 
-    for line in lines:
-        if line.strip():
-            ws[f"A{row_cursor}"] = f"Step {step}: {line}"
-            row_cursor += 1
-            step += 1
+        # ===== FIXED IMAGE HANDLER =====
+        START_ROW = 66
+        COLS = ["A", "D", "G"]
+        IMG_WIDTH = 240
+        IMG_HEIGHT = 160
 
-    # IMAGES
-    START_ROW = 66
-    COLS = ["A", "D", "G"]
+        row = START_ROW
+        col_index = 0
+        temp_images = []
 
-    IMG_WIDTH = 240
-    IMG_HEIGHT = 160
+        for img_file in images or []:
+            try:
+                img_file.seek(0)
 
-    row = START_ROW
-    col_index = 0
+                pil_img = PILImage.open(img_file).convert("RGB")
+                buffer = BytesIO()
+                pil_img.save(buffer, format="PNG")
+                buffer.seek(0)
 
-    for img_file in images or []:
-        try:
-            ext = "." + img_file.name.split(".")[-1]
+                with NamedTemporaryFile(delete=False, suffix=".png") as tmp:
+                    tmp.write(buffer.read())
+                    temp_img_path = tmp.name
 
-            with NamedTemporaryFile(delete=False, suffix=ext) as tmp:
-                tmp.write(img_file.read())
+                temp_images.append(temp_img_path)
 
-                img = XLImage(tmp.name)
+                img = XLImage(temp_img_path)
                 img.width = IMG_WIDTH
                 img.height = IMG_HEIGHT
 
@@ -220,24 +221,39 @@ if st.button("Generate Excel"):
                 ws.add_image(img, f"{col_letter}{row}")
 
                 col_index += 1
-
                 if col_index == 3:
                     col_index = 0
                     row += 16
 
-        except:
-            pass
+            except Exception as e:
+                st.warning(f"Skipped image: {e}")
 
-    # SAVE (FINAL FIX)
-    output = BytesIO()
-    wb.save(output)
-    output.seek(0)
+        # SAVE
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
+            temp_path = tmp.name
 
-    file_name = f"{recipe_name.strip().replace(' ', '_')}.xlsx" if recipe_name else "recipe.xlsx"
+        wb.save(temp_path)
 
-    st.download_button(
-        label="Download Excel",
-        data=output,
-        file_name=file_name,
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+        # CLEAN IMAGES AFTER SAVE
+        for path in temp_images:
+            try:
+                os.remove(path)
+            except:
+                pass
+
+        with open(temp_path, "rb") as f:
+            file_data = f.read()
+
+        os.remove(temp_path)
+
+        file_name = f"{recipe_name.strip().replace(' ', '_')}.xlsx" if recipe_name else "recipe.xlsx"
+
+        st.download_button(
+            label="Download Excel",
+            data=file_data,
+            file_name=file_name,
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
+    except Exception as e:
+        st.error(f"Failed to generate Excel: {e}")
