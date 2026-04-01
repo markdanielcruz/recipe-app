@@ -23,6 +23,8 @@ st.divider()
 
 # ================= LOAD =================
 cost_df = pd.read_excel("costs.xlsx")
+cost_df.columns = cost_df.columns.str.strip()  # FIXED
+
 ingredients = cost_df.iloc[:, 0].dropna().tolist()
 
 if "items" not in st.session_state:
@@ -60,19 +62,22 @@ with col2:
     qty = st.number_input("Quantity", min_value=0.0)
 
 if st.button("Add Ingredient"):
-    row = cost_df[cost_df.iloc[:, 0] == ingredient].iloc[0]
+    try:
+        row = cost_df[cost_df.iloc[:, 0] == ingredient].iloc[0]
 
-    unit_cost = float(row[1])
-    uom = str(row[2])
-    packaging = 1000 if uom.lower() in ["g", "ml"] else 1
+        unit_cost = float(row.iloc[1])   # FIXED
+        uom = str(row.iloc[2])          # FIXED
+        packaging = 1000 if uom.lower() in ["g", "ml"] else 1
 
-    st.session_state["items"].append({
-        "ingredient": ingredient,
-        "qty": qty,
-        "packaging": packaging,
-        "uom": uom,
-        "unit_cost": unit_cost
-    })
+        st.session_state["items"].append({
+            "ingredient": ingredient,
+            "qty": qty,
+            "packaging": packaging,
+            "uom": uom,
+            "unit_cost": unit_cost
+        })
+    except:
+        st.error("Error adding ingredient. Check your costs.xlsx format.")
 
 # ================= INGREDIENT LIST =================
 st.markdown("### 📋 Ingredients List")
@@ -188,13 +193,12 @@ if st.button("Generate Excel"):
                 ws[f"A{row_cursor}"] = f"Step {i}: {line}"
                 row_cursor += 1
 
-        # ===== FIXED IMAGE HANDLER =====
         START_ROW = 66
         COLS = ["A", "D", "G"]
         IMG_WIDTH = 240
         IMG_HEIGHT = 160
 
-        row = START_ROW
+        row_pos = START_ROW
         col_index = 0
         temp_images = []
 
@@ -217,24 +221,21 @@ if st.button("Generate Excel"):
                 img.width = IMG_WIDTH
                 img.height = IMG_HEIGHT
 
-                col_letter = COLS[col_index]
-                ws.add_image(img, f"{col_letter}{row}")
+                ws.add_image(img, f"{COLS[col_index]}{row_pos}")
 
                 col_index += 1
                 if col_index == 3:
                     col_index = 0
-                    row += 16
+                    row_pos += 16
 
-            except Exception as e:
-                st.warning(f"Skipped image: {e}")
+            except:
+                pass
 
-        # SAVE
         with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
             temp_path = tmp.name
 
         wb.save(temp_path)
 
-        # CLEAN IMAGES AFTER SAVE
         for path in temp_images:
             try:
                 os.remove(path)
