@@ -41,14 +41,21 @@ st.markdown(f"""
 *, *::before, *::after {{ box-sizing: border-box; }}
 html, body, [class*="css"] {{
     font-family: 'Inter', sans-serif;
-    background-color: #0E1410;
+    background-color: #0A1208;
     color: #D4D0C8;
 }}
-.stApp {{ background-color: #0E1410; }}
+.stApp {{
+    background-color: #0A1208;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='700' viewBox='0 0 900 700'%3E%3Crect width='900' height='700' fill='%230A1208'/%3E%3Cg opacity='0.28'%3E%3Cpath d='M-10,700 C30,580 110,510 165,415 C192,362 180,298 155,258 C198,302 214,370 192,425 C242,358 252,265 230,196 C272,275 260,378 228,445 C276,368 298,254 286,162 C324,250 300,376 262,458 C235,512 196,596 168,700Z' fill='%231A4A1F'/%3E%3Cline x1='155' y1='258' x2='98' y2='700' stroke='%232A6B2F' stroke-width='1.5' opacity='0.45'/%3E%3Cline x1='155' y1='258' x2='188' y2='362' stroke='%232A6B2F' stroke-width='0.9' opacity='0.35'/%3E%3Cline x1='155' y1='258' x2='214' y2='400' stroke='%232A6B2F' stroke-width='0.9' opacity='0.35'/%3E%3Cline x1='155' y1='258' x2='142' y2='480' stroke='%232A6B2F' stroke-width='0.9' opacity='0.35'/%3E%3C/g%3E%3Cg opacity='0.22' transform='translate(860,0)'%3E%3Cpath d='M20,700 C0,580 -42,498 -78,415 C-100,358 -88,288 -64,242 C-98,292 -110,368 -92,425 C-130,352 -136,254 -112,185 C-152,270 -140,386 -106,450 C-140,362 -172,244 -166,138 C-196,242 -168,382 -128,462 C-104,518 -70,600 -46,700Z' fill='%231A4A1F'/%3E%3Cline x1='-64' y1='242' x2='-16' y2='700' stroke='%232A6B2F' stroke-width='1.5' opacity='0.45'/%3E%3C/g%3E%3Cg opacity='0.18' transform='translate(370,-70)'%3E%3Cpath d='M70,0 C26,92 -4,206 12,322 C-28,258 -40,162 -12,80 C-62,126 -74,242 -46,334 C-86,270 -82,160 -56,80 C-104,160 -92,292 -56,390 C-28,430 18,458 64,452 C108,446 150,406 164,350 C182,270 166,154 124,80 C144,160 138,276 112,338 C130,248 126,132 98,58 C78,-16 74,-16 70,0Z' fill='%23163D1A'/%3E%3Cline x1='70' y1='0' x2='46' y2='452' stroke='%232A6B2F' stroke-width='1.2' opacity='0.4'/%3E%3C/g%3E%3Cg opacity='0.14' transform='translate(640,230) rotate(-18)'%3E%3Cpath d='M0,-35 C-28,34 -40,126 -20,202 C-55,148 -63,63 -37,0 C-78,46 -85,144 -58,212 C-90,160 -85,68 -58,0 C-104,70 -92,178 -53,254 C-25,292 14,310 50,304 C88,296 112,258 116,212 C124,138 106,56 66,8 C86,66 84,148 60,204 C76,132 72,58 46,8 C28,-20 10,-25 0,-35Z' fill='%231A4A1F'/%3E%3Cline x1='0' y1='-35' x2='28' y2='304' stroke='%232A6B2F' stroke-width='1.2' opacity='0.4'/%3E%3C/g%3E%3Cg opacity='0.1' transform='translate(150,360) rotate(6)'%3E%3Cpath d='M0,0 C-28,64 -36,150 -18,225 C-52,172 -58,86 -32,22 C-72,64 -78,160 -52,230 C-82,178 -78,82 -52,16 C-94,80 -84,190 -48,264 C-24,306 14,322 48,316 C80,308 104,270 106,226 C114,150 98,66 60,16 C78,70 74,154 50,208 C66,140 62,62 40,16 C24,-10 8,-6 0,0Z' fill='%231A4A1F'/%3E%3C/g%3E%3Cg opacity='0.09' transform='translate(480,400) rotate(-28)'%3E%3Cellipse cx='0' cy='0' rx='20' ry='115' fill='%231A4A1F'/%3E%3Cellipse cx='44' cy='-28' rx='16' ry='92' fill='%231A4A1F' transform='rotate(30)'/%3E%3Cellipse cx='-38' cy='18' rx='16' ry='86' fill='%231A4A1F' transform='rotate(-24)'/%3E%3Cellipse cx='78' cy='-18' rx='14' ry='78' fill='%231A4A1F' transform='rotate(44)'/%3E%3Cellipse cx='-68' cy='28' rx='13' ry='72' fill='%231A4A1F' transform='rotate(-40)'/%3E%3C/g%3E%3Cg opacity='0.06' transform='translate(260,550)'%3E%3Cpath d='M0,-20 C-18,28 -24,90 -12,140 C-36,105 -40,48 -22,8 C-50,32 -54,108 -36,158 C-56,118 -54,52 -36,8 C-66,52 -58,132 -34,182 C-18,205 8,216 34,212 C58,208 74,184 76,158 C82,106 70,46 44,10 C56,48 54,108 38,148 C48,100 46,44 30,10 C18,-8 6,-14 0,-20Z' fill='%231A4A1F'/%3E%3C/g%3E%3C/svg%3E");
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+}}
 [data-testid="stSidebar"] {{
-    background-color: #111811 !important;
+    background-color: rgba(8, 14, 8, 0.92) !important;
     border-right: 1px solid #2A3828;
     padding-top: 0 !important;
+    backdrop-filter: blur(8px);
 }}
 [data-testid="stSidebar"] > div:first-child {{ padding-top: 0; }}
 .logo-panel {{
@@ -92,7 +99,7 @@ html, body, [class*="css"] {{
     margin-bottom: 8px;
 }}
 .main-header {{
-    background: linear-gradient(135deg, #1A2E1A 0%, #152515 100%);
+    background: linear-gradient(135deg, rgba(26,46,26,0.85) 0%, rgba(21,37,21,0.85) 100%);
     border: 1px solid #2A3828;
     border-radius: 12px;
     padding: 24px 32px;
@@ -100,6 +107,7 @@ html, body, [class*="css"] {{
     display: flex;
     align-items: center;
     gap: 20px;
+    backdrop-filter: blur(6px);
 }}
 .main-header-text h2 {{
     font-family: 'Cormorant Garamond', serif;
