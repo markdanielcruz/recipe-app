@@ -9,6 +9,10 @@ import streamlit as st
 import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.drawing.image import Image as XLImage
+from openpyxl.drawing.spreadsheet_drawing import OneCellAnchor, AnchorMarker
+from openpyxl.drawing.xdr import XDRPositiveSize2D
+from openpyxl.utils.units import pixels_to_EMU
+from openpyxl.utils import get_column_letter
 from tempfile import NamedTemporaryFile
 from PIL import Image as PILImage
 from io import BytesIO
@@ -35,28 +39,18 @@ st.markdown(f"""
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
 *, *::before, *::after {{ box-sizing: border-box; }}
-
 html, body, [class*="css"] {{
     font-family: 'Inter', sans-serif;
     background-color: #0E1410;
     color: #D4D0C8;
 }}
-
-.stApp {{
-    background-color: #0E1410;
-}}
-
-/* ── SIDEBAR ── */
+.stApp {{ background-color: #0E1410; }}
 [data-testid="stSidebar"] {{
     background-color: #111811 !important;
     border-right: 1px solid #2A3828;
     padding-top: 0 !important;
 }}
-[data-testid="stSidebar"] > div:first-child {{
-    padding-top: 0;
-}}
-
-/* ── LOGO PANEL ── */
+[data-testid="stSidebar"] > div:first-child {{ padding-top: 0; }}
 .logo-panel {{
     background: linear-gradient(175deg, #1A2E1A 0%, #0E1C0E 60%, #080F08 100%);
     padding: 32px 24px 24px 24px;
@@ -87,8 +81,6 @@ html, body, [class*="css"] {{
     color: #5A7A52;
     margin-top: 10px;
 }}
-
-/* ── SIDEBAR NAV LABELS ── */
 .nav-label {{
     font-size: 0.6rem;
     font-weight: 600;
@@ -99,8 +91,6 @@ html, body, [class*="css"] {{
     border-bottom: 1px solid #1E2E1C;
     margin-bottom: 8px;
 }}
-
-/* ── MAIN AREA ── */
 .main-header {{
     background: linear-gradient(135deg, #1A2E1A 0%, #152515 100%);
     border: 1px solid #2A3828;
@@ -126,8 +116,6 @@ html, body, [class*="css"] {{
     color: #4A6B3E;
     margin: 0;
 }}
-
-/* ── SECTION LABEL ── */
 .section-label {{
     font-size: 0.62rem;
     font-weight: 600;
@@ -138,17 +126,6 @@ html, body, [class*="css"] {{
     padding-bottom: 6px;
     border-bottom: 1px solid #1E2E1C;
 }}
-
-/* ── CARDS ── */
-.info-card {{
-    background: #111E11;
-    border: 1px solid #1E2E1C;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 12px;
-}}
-
-/* ── METRICS ── */
 [data-testid="metric-container"] {{
     background: #111E11 !important;
     border: 1px solid #1E2E1C !important;
@@ -167,8 +144,6 @@ html, body, [class*="css"] {{
     font-weight: 600 !important;
     color: #A8C896 !important;
 }}
-
-/* ── INPUTS ── */
 .stTextInput > div > div > input,
 .stNumberInput > div > div > input,
 .stTextArea > div > textarea,
@@ -191,8 +166,6 @@ label {{
     font-weight: 500 !important;
     letter-spacing: 0.3px !important;
 }}
-
-/* ── BUTTONS ── */
 .stButton > button {{
     background-color: #2A3E28 !important;
     color: #A8C896 !important;
@@ -210,20 +183,6 @@ label {{
     border-color: #5A7A52 !important;
     color: #C8DCC0 !important;
 }}
-
-/* Primary generate button */
-.generate-btn .stButton > button {{
-    background: linear-gradient(135deg, #3A5238 0%, #2A3E28 100%) !important;
-    border: 1px solid #5A7A52 !important;
-    color: #C8DCC0 !important;
-    font-size: 0.9rem !important;
-    padding: 14px 24px !important;
-    border-radius: 10px !important;
-    letter-spacing: 1.5px !important;
-    text-transform: uppercase !important;
-}}
-
-/* Download button */
 [data-testid="stDownloadButton"] > button {{
     background: linear-gradient(135deg, #3A5238, #2A3E28) !important;
     color: #C8DCC0 !important;
@@ -236,15 +195,12 @@ label {{
     width: 100% !important;
     padding: 14px !important;
 }}
-
-/* ── EXPANDER ── */
 .streamlit-expanderHeader {{
     background-color: #111E11 !important;
     border: 1px solid #1E2E1C !important;
     border-radius: 8px !important;
     color: #A8C896 !important;
     font-size: 0.86rem !important;
-    font-weight: 500 !important;
 }}
 .streamlit-expanderContent {{
     background-color: #0E1810 !important;
@@ -252,38 +208,25 @@ label {{
     border-top: none !important;
     border-radius: 0 0 8px 8px !important;
 }}
-
-/* ── DATAFRAME ── */
 [data-testid="stDataFrame"] {{
     border: 1px solid #1E2E1C !important;
     border-radius: 10px !important;
     overflow: hidden !important;
 }}
-
-/* ── DIVIDER ── */
 hr {{ border-color: #1E2E1C !important; }}
-
-/* ── SUCCESS/ERROR ── */
-[data-testid="stAlert"] {{ border-radius: 8px !important; }}
 .stSuccess {{ background-color: #1A2E1A !important; border-color: #3A5238 !important; }}
 .stError {{ background-color: #2E1A1A !important; }}
-
-/* ── FILE UPLOADER ── */
 [data-testid="stFileUploader"] {{
     border: 1px dashed #2A3828 !important;
     border-radius: 10px !important;
     background: #111E11 !important;
     padding: 12px !important;
 }}
-
-/* ── SUBHEADER ── */
 h3 {{
     font-family: 'Cormorant Garamond', serif !important;
     color: #A8C896 !important;
     font-size: 1.3rem !important;
 }}
-
-/* ── TOTAL COST BADGE ── */
 .total-badge {{
     background: linear-gradient(135deg, #1A2E1A, #111E11);
     border: 1px solid #3A5238;
@@ -309,9 +252,81 @@ h3 {{
 </style>
 """, unsafe_allow_html=True)
 
+# ── Photo helper ─────────────────────────────────────────────
+def place_in_box(pil_img, box_w, box_h):
+    pil_img = pil_img.convert("RGB")
+    pil_img.thumbnail((box_w, box_h), PILImage.LANCZOS)
+    canvas = PILImage.new("RGB", (box_w, box_h), (255, 255, 255))
+    canvas.paste(pil_img, ((box_w - pil_img.width) // 2,
+                            (box_h - pil_img.height) // 2))
+    return canvas
+
+# ── Grid layout calculator ───────────────────────────────────
+def build_photo_grid(ws, n_cols=4, gap_px=4):
+    """
+    Read actual column widths (A-H) and row heights from the workbook,
+    compute photo box size and exact OneCellAnchor positions for each slot.
+    Accounts for print margins so photos stay inside the printed border.
+    Returns: (box_w, box_h, anchors) where anchors[i] = (col_idx, col_off_emu, row_height_emu_per_row)
+    """
+    # ── Column widths (px) for columns A-H ──────────────────
+    default_col = ws.sheet_format.defaultColWidth or 8
+    col_px = []
+    for c in range(1, 9):   # A=1 … H=8
+        letter = get_column_letter(c)
+        cd = ws.column_dimensions.get(letter)
+        units = cd.width if (cd and cd.width) else default_col
+        col_px.append(int(units * 7 + 5))
+
+    total_px = sum(col_px)
+
+    # ── Deduct print margins so photos stay inside border ────
+    scale    = (ws.page_setup.scale or 100) / 100
+    left_px  = int(ws.page_margins.left  * 96 / scale)
+    right_px = int(ws.page_margins.right * 96 / scale)
+    safe_px  = total_px - left_px - right_px - 10   # 10px safety buffer
+
+    box_w = (safe_px - gap_px * (n_cols - 1)) // n_cols
+    box_h = int(box_w * 0.75)   # 4:3
+
+    # Cumulative column positions
+    cum = [0]
+    for w in col_px:
+        cum.append(cum[-1] + w)
+
+    # For each photo column slot, find which Excel column it falls in
+    # and the pixel offset from that column's left edge
+    col_anchors = []   # list of (excel_col_0based, col_off_px)
+    for i in range(n_cols):
+        x_px = i * (box_w + gap_px)
+        for c in range(len(col_px)):
+            if cum[c] <= x_px < cum[c + 1]:
+                col_anchors.append((c, x_px - cum[c]))
+                break
+
+    # ── Row height in EMU ────────────────────────────────────
+    default_row_pt = ws.sheet_format.defaultRowHeight or 15
+    PT_TO_EMU = 12700
+
+    def row_emu(r_1based):
+        rd = ws.row_dimensions.get(r_1based)
+        pt = rd.height if (rd and rd.height) else default_row_pt
+        return int(pt * PT_TO_EMU)
+
+    def y_emu_at_row(target_1based):
+        return sum(row_emu(r) for r in range(1, target_1based))
+
+    # How many Excel rows does one photo band (box_h + gap) span?
+    # We advance the anchor row by this count per photo row
+    # so rowOff stays 0 and Excel never clips the image.
+    one_row_emu    = int(default_row_pt * PT_TO_EMU)
+    band_total_emu = pixels_to_EMU(box_h + gap_px)
+    rows_per_band  = max(1, (band_total_emu + one_row_emu - 1) // one_row_emu)
+
+    return box_w, box_h, col_anchors, y_emu_at_row, rows_per_band
+
 # ── SIDEBAR ─────────────────────────────────────────────────
 with st.sidebar:
-    # Logo panel
     if logo_b64:
         st.markdown(f"""
         <div class="logo-panel">
@@ -332,17 +347,16 @@ with st.sidebar:
     category    = st.text_input("Category")
 
     st.markdown('<div class="nav-label">⚖️ Yield & Serving</div>', unsafe_allow_html=True)
-    total_yield  = st.number_input("Total Recipe Yield", min_value=0.0)
-    serving_size = st.number_input("Serving Size",        min_value=0.0)
+    total_yield  = st.number_input("Total Recipe Yield", min_value=0.0, value=None, placeholder="0", step=1.0, format="%g")
+    serving_size = st.number_input("Serving Size",        min_value=0.0, value=None, placeholder="0", step=1.0, format="%g")
+    total_yield  = total_yield  or 0.0
+    serving_size = serving_size or 0.0
     servings = total_yield / serving_size if serving_size > 0 else 0
     st.metric("No. of Servings", f"{servings:.0f}")
 
     st.markdown('<div class="nav-label">✍️ Sign-Off</div>', unsafe_allow_html=True)
     prepared_by = st.text_input("Prepared By")
     checked_by  = st.text_input("Checked By")
-
-    st.markdown('<div class="nav-label">📷 Photos</div>', unsafe_allow_html=True)
-    images = st.file_uploader("Upload Photos", type=["png","jpg","jpeg"], accept_multiple_files=True)
 
 # ── LOAD COSTS ───────────────────────────────────────────────
 cost_df = pd.read_excel("costs.xlsx")
@@ -362,7 +376,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ── TWO COLUMN LAYOUT ────────────────────────────────────────
 left, right = st.columns([1.1, 1], gap="large")
 
 # ════════════════ LEFT COLUMN ════════════════
@@ -373,7 +386,8 @@ with left:
     with col1:
         ingredient = st.selectbox("Ingredient", ingredients)
     with col2:
-        qty = st.number_input("Quantity", min_value=0.0, key="qty_input")
+        qty = st.number_input("Quantity", min_value=0.0, value=None, placeholder="0", step=1.0, format="%g", key="qty_input")
+        qty = qty or 0.0
 
     notes_input = st.text_input("Notes", placeholder="e.g. sifted, room temp, finely chopped…")
 
@@ -449,8 +463,26 @@ with left:
             st.session_state["procedure_steps"].pop()
             st.rerun()
 
-    # Build procedure string for Excel export
-    procedure = "\n".join(st.session_state["procedure_steps"])
+    st.markdown('<div class="section-label">📷 Step Photos</div>', unsafe_allow_html=True)
+    st.caption("Upload one photo at a time. They will be placed in sequence on the recipe card.")
+
+    if "photo_slots" not in st.session_state:
+        st.session_state["photo_slots"] = 1
+
+    images = []
+    for idx in range(st.session_state["photo_slots"]):
+        uploaded = st.file_uploader(f"Photo {idx + 1}", type=["png", "jpg", "jpeg"], key=f"photo_slot_{idx}")
+        images.append(uploaded)
+
+    ph1, ph2 = st.columns(2)
+    with ph1:
+        if st.button("＋ Add Photo Slot"):
+            st.session_state["photo_slots"] += 1
+            st.rerun()
+    with ph2:
+        if st.button("− Remove Last Slot") and st.session_state["photo_slots"] > 1:
+            st.session_state["photo_slots"] -= 1
+            st.rerun()
 
 # ════════════════ RIGHT COLUMN ════════════════
 with right:
@@ -459,7 +491,6 @@ with right:
 
     if st.session_state["items"]:
         st.markdown('<div class="section-label">📊 Cost Breakdown</div>', unsafe_allow_html=True)
-
         df = pd.DataFrame(st.session_state["items"])
         df["Total Cost"] = df["qty"] * df["unit_cost"]
         display_df = df[["ingredient","qty","uom","unit_cost","Total Cost"]].copy()
@@ -484,7 +515,6 @@ with right:
                 st.metric("Food Cost %", f"{fc_pct:.1f}%")
             with m2:
                 st.metric("Gross Profit", f"₱{srp - total:,.2f}")
-
     else:
         st.markdown("""
         <div style="text-align:center;padding:60px 20px;color:#3A5238;border:1px dashed #1E2E1C;border-radius:12px;margin-top:40px;">
@@ -494,7 +524,6 @@ with right:
         </div>
         """, unsafe_allow_html=True)
 
-    # ── GENERATE ──────────────────────────────────────────
     st.markdown('<div class="section-label">📥 Export</div>', unsafe_allow_html=True)
 
     if st.button("⬇  Generate Recipe Card"):
@@ -532,37 +561,80 @@ with right:
                     ws[f"A{row_cursor}"] = f"Step {i}: {line}"
                     row_cursor += 1
 
-            START_ROW = 66
-            COLS      = ["A","D","G"]
-            IMG_W, IMG_H = 240, 160
-            row_pos   = START_ROW
-            col_index = 0
-            temp_images = []
+            # ── PHOTOS: auto-fit to actual sheet width ────────
+            #
+            # build_photo_grid() reads the real column widths and
+            # row heights from the loaded workbook, then computes:
+            #   - box_w / box_h: photo cell size that fills the page
+            #   - col_anchors:   which Excel column each slot falls
+            #                    in, and the pixel offset from its edge
+            #   - y_emu_at_row:  exact Y in EMU for any row number
+            #
+            # OneCellAnchor(col, colOff, row, rowOff) then places
+            # each image at the correct cell + sub-cell offset.
 
-            for img_file in images or []:
+            N_COLS  = 4
+            GAP_PX  = 4
+
+            box_w, box_h, col_anchors, y_emu_at_row, rows_per_band = build_photo_grid(
+                ws, n_cols=N_COLS, gap_px=GAP_PX
+            )
+
+            w_emu = pixels_to_EMU(box_w)
+            h_emu = pixels_to_EMU(box_h)
+
+            # Photos start 2 rows below the last procedure step
+            photo_start_row = row_cursor + 2   # 1-based
+
+            temp_images = []
+            valid_images = [img for img in images if img is not None]
+
+            for idx, img_file in enumerate(valid_images):
                 try:
+                    row_num = idx // N_COLS   # which photo row (0, 1, 2 …)
+                    col_num = idx % N_COLS    # which column slot (0-3)
+
+                    excel_col_0, col_off_px = col_anchors[col_num]
+                    col_off_emu = pixels_to_EMU(col_off_px)
+
+                    # Advance the anchor row by rows_per_band per photo row
+                    # so images never stack on top of each other
+                    anchor_row_0based = (photo_start_row - 1) + row_num * rows_per_band
+
                     img_file.seek(0)
-                    pil_img = PILImage.open(img_file).convert("RGB")
+                    fitted = place_in_box(PILImage.open(img_file), box_w, box_h)
+
                     buf = BytesIO()
-                    pil_img.save(buf, format="PNG")
+                    fitted.save(buf, format="PNG")
                     buf.seek(0)
+
                     with NamedTemporaryFile(delete=False, suffix=".png") as tmp:
                         tmp.write(buf.read())
                         tp = tmp.name
                     temp_images.append(tp)
-                    img = XLImage(tp)
-                    img.width, img.height = IMG_W, IMG_H
-                    ws.add_image(img, f"{COLS[col_index]}{row_pos}")
-                    col_index += 1
-                    if col_index == 3:
-                        col_index = 0
-                        row_pos  += 16
-                except:
-                    pass
 
+                    xl_img        = XLImage(tp)
+                    xl_img.width  = box_w
+                    xl_img.height = box_h
+                    xl_img.anchor = OneCellAnchor(
+                        _from=AnchorMarker(
+                            col    = excel_col_0,
+                            colOff = col_off_emu,
+                            row    = anchor_row_0based,
+                            rowOff = 0
+                        ),
+                        ext=XDRPositiveSize2D(w_emu, h_emu)
+                    )
+                    ws.add_image(xl_img)
+
+                except Exception as img_err:
+                    st.warning(f"Could not place photo {idx + 1}: {img_err}")
+
+            # ── Save & download ────────────────────────────────
             with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
                 temp_path = tmp.name
             wb.save(temp_path)
+
             for p in temp_images:
                 try: os.remove(p)
                 except: pass
